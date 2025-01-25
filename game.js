@@ -1,54 +1,39 @@
-// Подключаем сокет
-const socket = io('https://your-server-url.com'); // Укажите URL вашего сервера
+// Получаем элементы игроков
+const player1Element = document.getElementById('player1');
+const player2Element = document.getElementById('player2');
 
-// Получаем элемент игрока
-const playerElement = document.getElementById('player');
-let player = {
-    x: window.innerWidth / 2,
-    y: window.innerHeight / 2,
-};
+// Начальные позиции игроков
+let player1 = { x: 100, y: 100 };
+let player2 = { x: 300, y: 300 };
 
-// Отображение игрока на экране
+// Обновляем позицию игрока
 function updatePlayerPosition() {
-    playerElement.style.left = `${player.x}px`;
-    playerElement.style.top = `${player.y}px`;
+    player1Element.style.left = `${player1.x}px`;
+    player1Element.style.top = `${player1.y}px`;
+
+    player2Element.style.left = `${player2.x}px`;
+    player2Element.style.top = `${player2.y}px`;
 }
 
-// Обработчики клавиш для управления
+// Обработчики клавиш для управления игроками
 document.addEventListener('keydown', (event) => {
-    const step = 10;
+    const step = 10; // Шаг перемещения
 
-    if (event.key === 'w') player.y -= step;
-    if (event.key === 's') player.y += step;
-    if (event.key === 'a') player.x -= step;
-    if (event.key === 'd') player.x += step;
+    // Управление первым игроком (WASD)
+    if (event.key === 'w') player1.y -= step;
+    if (event.key === 's') player1.y += step;
+    if (event.key === 'a') player1.x -= step;
+    if (event.key === 'd') player1.x += step;
 
-    // Отправляем позицию игрока на сервер
-    socket.emit('move', player);
+    // Управление вторым игроком (стрелки)
+    if (event.key === 'ArrowUp') player2.y -= step;
+    if (event.key === 'ArrowDown') player2.y += step;
+    if (event.key === 'ArrowLeft') player2.x -= step;
+    if (event.key === 'ArrowRight') player2.x += step;
+
+    // Обновляем позиции игроков
     updatePlayerPosition();
 });
 
-// Отправка начальной позиции на сервер
-socket.emit('move', player);
-
-// Получение позиции других игроков с сервера
-socket.on('players', (players) => {
-    document.querySelectorAll('.other-player').forEach(el => el.remove());
-
-    players.forEach(p => {
-        if (!document.getElementById(p.id)) {
-            const otherPlayerElement = document.createElement('div');
-            otherPlayerElement.classList.add('circle', 'other-player');
-            otherPlayerElement.style.backgroundColor = 'blue';
-            otherPlayerElement.id = p.id;
-            document.getElementById('game-container').appendChild(otherPlayerElement);
-        }
-
-        const otherPlayer = document.getElementById(p.id);
-        otherPlayer.style.left = `${p.x}px`;
-        otherPlayer.style.top = `${p.y}px`;
-    });
-});
-
-// Инициализация отображения собственного игрока
+// Инициализация отображения игроков
 updatePlayerPosition();
